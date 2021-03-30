@@ -1,0 +1,32 @@
+{
+    "nodes": [
+    {
+    "arch": "x86_64",
+    "cpu": "40",
+    "disk": "100",
+    "mac": [
+        "E4:43:4B:49:A9:97"
+    ],
+    "memory": "125000",
+    "name": "DPDK_Host6",
+    "pm_addr": "10.9.20.143",
+    "pm_password": "calvin",
+    "pm_type": "pxe_ipmitool",
+    "pm_user": "root"
+    },
+    {
+    "arch": "x86_64",
+    "cpu": "40",
+    "disk": "100",
+    "mac": [
+        "E4:43:4B:4A:0C:43"
+    ],
+    "memory": "125000",
+    "name": "SRIOV_Host7",
+    "pm_addr": "10.9.20.144",
+    "pm_password": "calvin",
+    "pm_type": "pxe_ipmitool",
+    "pm_user": "root"
+    }
+  ]
+}

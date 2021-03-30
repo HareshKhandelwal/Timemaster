@@ -1,0 +1,99 @@
+resource_registry:
+  # Specify the relative/absolute path to the config files you want to use for override the default.
+  OS::TripleO::ComputeOvsDpdk::Net::SoftwareConfig: nic-configs/computedpdk.yaml
+  OS::TripleO::Controller::Net::SoftwareConfig: nic-configs/controller.yaml
+  OS::TripleO::ComputeSriov::Net::SoftwareConfig: nic-configs/computesriov.yaml
+
+parameter_defaults:
+  #Define the DNS servers (maximum 2) for the overcloud nodes
+  DnsServers: ["10.46.0.31","10.46.0.32"]
+
+  # May set to br-ex if using floating IPs only on native VLAN on bridge br-ex
+  #NeutronExternalNetworkBridge: "''"
+
+  # The tunnel type for the tenant network (vxlan or gre). Set to '' to disable tunneling.
+  NeutronTunnelTypes: 'vxlan'
+
+  # The tenant network type for Neutron (vlan or vxlan).
+  NeutronNetworkType: 'vxlan,vlan'
+
+  # The OVS logical->physical bridge mappings to use.
+  NeutronBridgeMappings: 'dpdk-mgmt:br-link0'
+
+  # The Neutron ML2 and OpenVSwitch vlan mapping range to support.
+  NeutronNetworkVLANRanges: 'dpdk-mgmt:761:761,sriov-1:762:762'
+
+  # Nova flavor to use.
+  OvercloudControllerFlavor: controller
+  OvercloudComputeOvsDpdkFlavor: computedpdk
+  OvercloudComputeSriovFlavor: computesriov
+
+  # Number of nodes to deploy.
+  ControllerCount: 1
+  ComputeOvsDpdkCount: 1
+  ComputeSriovCount: 1
+
+  # NTP server configuration.
+  NtpServer: ['clock.redhat.com']
+
+  # MTU global configuration
+  NeutronGlobalPhysnetMtu: 9000
+
+  # Configure the classname of the firewall driver to use for implementing security groups.
+  NeutronOVSFirewallDriver: openvswitch
+  SshServerOptions:
+    UseDns: 'no'
+
+  ControllerHostnameFormat: 'controller-%index%'
+  ComputeOvsDpdkHostnameFormat: 'hareshcomputedpdk-%index%'
+  ComputeSriovHostnameFormat: 'hareshcomputesriov-%index%'
+
+  # Collectd server that will gather information from overcloud deployment - Service Assurance
+  #CollectdServer: 192.168.70.1
+  #CollectdConnectionType: "network"
+
+  ##########################
+  # OVS DPDK configuration #
+  ##########################
+  ComputeOvsDpdkParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=8 iommu=pt intel_iommu=on isolcpus=2-11"
+    TunedProfileName: "cpu-partitioning"
+    IsolCpusList: "2-11"
+    OvsDpdkCoreList: "0,1"
+    OvsPmdCoreList: "2,3"
+    NovaVcpuPinSet: ['4-11']
+    NovaReservedHostMemory: 4096
+    OvsDpdkSocketMemory: "1024,0"
+    OvsDpdkMemoryChannels: "4"
+    NovaComputeCpuSharedSet: [0,1]
+    # below lines are for history - now this is resolved and we are not
+    # required to pass extra hiera data variables - refer BZ -
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1617927
+    NovaLibvirtRxQueueSize: 1024
+    NovaLibvirtTxQueueSize: 1024
+
+  ################################
+  #SRIOV Config#
+  ################################
+  ComputeSriovParameters:
+    # In Below parameters, 0 and 1 represent domain number whereas eno1 and eno2 are interfaces belongs to domain 0 and domain 1 respectively.
+    PTPInterfaces: '0:eno1,1:eno2'
+    PTPMessageTransport: 'UDPv4'
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=8 iommu=pt intel_iommu=on isolcpus=2-11"
+    IsolCpusList: "2-11"
+    NovaVcpuPinSet: ['4-11']
+    NovaReservedHostMemory: 4096
+    NovaComputeCpuSharedSet: [0,1]
+      # below lines are for history - now this is resolved and we are not
+      # required to pass extra hiera data variables - refer BZ -
+      # https://bugzilla.redhat.com/show_bug.cgi?id=1617927
+    NovaLibvirtRxQueueSize: 1024
+    NovaLibvirtTxQueueSize: 1024
+
+  NovaPCIPassthrough:
+    - devname: "eno2"
+      trusted: "true"
+      physical_network: "sriov-1"
+
+  NeutronPhysicalDevMappings: "sriov-1:eno2"
+  NeutronSriovNumVFs: "eno2:5"
